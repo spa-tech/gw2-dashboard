@@ -1,30 +1,87 @@
+## Prerequisites
+
+### Virtual Environment
+
+Install the python3-venv package:
+
+```
+apt-get install python3-venv  
+```
+
+Create directory for the virtual environment:
+
+```
+mkdir djangoenv
+```
+
+Create the virtual environment:
+
+```
+cd djangoenv
+python3 -m venv djangoenv  
+```
+
+Activate the virtual environment:
+
+```
+source djangoenv/bin/activate  
+```
+
+
 ## Installation
 
 ```
 sudo apt-get update
-sudo apt-get install apache2 apache2-utils libexpat1 ssl-cert python
-sudo apt-get install libapache2-mod-wsgi
-
-# we may need to install only the py3 version of the package
-sudo apt-get install libapache2-mod-wsgi-py3
-sudo systemctl restart apache2
+pip install django  
 ```
 
-Draft a config:
+## Startup
+
+Start Daphne like this:
 
 ```
-sudo vi /etc/apache2/conf-available/mod-wsgi.conf
+daphne dashboard.asgi:application
 ```
 
-And put this line in it:
+## Enhancements
+
+* [ ] create a virtual python environment for the app to run inside
+* [ ] create a systemd service to start the app on boot
+
+## Start as a Service
+
+Create a service file like this:
 
 ```
-WSGIScriptAlias /test_wsgi /var/www/html/test_script.py
+[Unit]
+Description=My Daphne Service
+After=network.target
+
+[Service]
+Type=simple
+User=wwwrunn
+WorkingDirectory=/srv/myapp
+ExecStart=/path/to/my/virtualenv/bin/python /path/to/daphne -b 0.0.0.0 -p 8001 myproject.asgi:application
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-Enable the config:
+Save it in `/etc/systemd/system/myapp.service` and make the system aware of it:
 
 ```
-sudo a2enconf mod-wsgi
-sudo systemctl restart apache2
+sudo systemctl daemon-reload
+```
+
+Start the service
+
+```
+sudo systemctl start daphne.service
+```
+
+Make it run on reboot
+
+```
+sudo systemctl enable daphne.service
 ```
